@@ -444,5 +444,9 @@ Após o sistema ser colocado em funcionamento, serão definidos relatórios e es
 
 ## Dia 2
 
-Começar resolvendo exercício anterior
+Começar resolvendo a modelagem
+<img src="C:\Users\abraao\study\curso_de_bd\atividades\delegacia_dia02\problema_delegacia.png" alt="problema_delegacia" style="zoom:200%;" />
 
+<img src="C:\Users\abraao\study\curso_de_bd\atividades\delegacia_dia02\delegacia.bmp" alt="delegacia" style="zoom:200%;" />
+
+pausa em 47
