@@ -445,8 +445,267 @@ Após o sistema ser colocado em funcionamento, serão definidos relatórios e es
 ## Dia 2
 
 Começar resolvendo a modelagem
-<img src="C:\Users\abraao\study\curso_de_bd\atividades\delegacia_dia02\problema_delegacia.png" alt="problema_delegacia" style="zoom:200%;" />
 
-<img src="C:\Users\abraao\study\curso_de_bd\atividades\delegacia_dia02\delegacia.bmp" alt="delegacia" style="zoom:200%;" />
+INDEX
 
-pausa em 47
+- Temos um índice específico para controle de unicidade UNIQUE INDEX
+- também temos índices relacionados a performance e devem ser usados de acordo com seus cenários.
+
+```sql
+-- seleciona o departamento
+select * from departamento;
+
+-- cria uma chave unica
+create unique index ak_departamento_nome on departamento (upper(nome));
+
+--inserir um valor repetido para testar
+insert into departamento (nome) values ('TI');
+
+-- outra forma de fazer
+-- excluir a chave unica
+drop index ak_departamento_nome
+
+-- alterar a tabela e adicionar o constrain
+alter table departamento
+add constraint ak_departamento_nome unique (nome);
+
+-- para dropar
+alter table departamento
+drop constraint ak_departamento_nome
+```
+
+exercicio
+
+* Na tabela de bairro criada anteriormente, onde nós definimos uma chave composta, faça as seguintes questões.
+  1. Apagar a chave primaria composta;
+  2. criar uma chave primaria simples com serial
+  3. criar um índice único composto por nome do bairro e nome da zona
+  4. criar um índice hash para o nome da zona
+
+```sql
+select * from bairro
+
+alter table bairro
+drop column id
+
+alter table bairro
+add column id serial not null
+
+alter table bairro
+add constraint pk_bairro primary key (id)
+
+alter table bairro
+add constraint ak_bairro unique (nome, zona)
+
+create index idx_bairro_zona on bairro using hash (zona)
+```
+
+DCL
+
+* É a linguagem que define a parte de controle de estrutura e dados, geralmente relacionada aos comandos GRANT E REVOKE.
+* Vamos criar um usuário sem acesso de super usuário e logo em seguida criar uma nova conexão para esse usuário.
+
+Criar novo usuário
+
+```sql
+create user abraao with encrypted password '123';
+create user giih superuser encrypted password '123';
+```
+
+Dar permissões
+
+```sql
+-- como super usuiario
+grant select on bairro to abraao;
+
+grant insert on bairro to abraao;
+
+grant update on bairro_id_seq to abraao;
+
+grant delete on bairro to abraao;
+
+-- remover as permissões
+revoke all on bairro from abraao;
+```
+
+permissão parcial a um usuario
+
+```sql
+grant select (nome) on bairro to abraao
+```
+
+criar grupos
+
+```sql
+-- criar o grupo
+create role colaboradores;
+
+-- adicionar usuarios
+alter group colaboradores add user abraao;
+alter group colaboradores add user alice;
+
+-- dar a permissao ao grupo
+grant select on bairro to colaboradores;
+
+-- criar usuario
+create user alice encrypted password '123';
+```
+
+Exercicio
+Tendo em vista que a consulta abaixo retorna as tabelas nos bancos da sua instância do PostgreSQL e que o exemplo em seguida faz concatenações de string, crie uma consulta para dar permissão de leitura para todas as tabelas para um determinado usuário.
+
+```sql
+select * from pg_tables;
+```
+
+```sql
+select * from pg_tables where schemaname in ('public', 'vendas');
+
+select schemaname, tablename from pg_tables;
+
+select 
+	concat('grant select on ', schemaname, '.', tablename, 'to abraao;')
+from pg_tables
+where schemaname in ('public', 'vendas')
+
+
+grant select on public.departamentoto abraao;
+grant select on public.produtoto abraao;
+grant select on public.pessoato abraao;
+grant select on public.clienteto abraao;
+grant select on vendas.fornecedorto abraao;
+grant select on public.funcionarioto abraao;
+grant select on public.bairroto abraao;
+```
+
+outra forma
+
+```sql
+do
+$$
+declare
+	consulta record;
+	comando varchar default '';
+begin
+	for consulta in select * from pg_tables where schemaname in ('public', 'vendas') loop
+		comando := concat('grant select on ', consulta.schemaname, '.', consulta.tablename, ' to abraao;');
+		-- raise notice 'table: %', comando;
+		execute comando;
+	end loop;
+end;
+$$
+```
+
+```sql
+do
+$$
+declare
+	consulta record;
+	comando varchar default '';
+begin
+	for consulta in select * from pg_tables where schemaname in ('public', 'vendas') loop
+		comando := concat('grant select on ', consulta.schemaname, '.', consulta.tablename, ' to abraao;');
+		-- raise notice 'table: %', comando;
+		execute comando;
+	end loop;
+end;
+$$
+```
+
+Para criar um ponto onde possa desfazer as alterações usar o beggin
+
+```sql
+select * from departamento;
+
+insert into departamento (nome) values ('Diretoria');
+
+begin;
+	insert into departamento (nome) values ('Diretoria 01');
+	insert into departamento (nome) values ('Diretoria 02');
+	insert into departamento (nome) values ('Diretoria 03');
+	insert into departamento (nome) values ('Diretoria 04');
+	insert into departamento (nome) values ('Diretoria 05');
+commit;
+
+rollback;
+```
+
+Exercício
+
+* Criar uma coluna salário na tabela funcionário com valor default 0.00 obrigatória;
+* Fazer um update para atualizar o salário para o id * 1000;
+* Criar um bloco anônimo para gerar um loop de 1000 iterações e cadastrar vários funcionários
+    * O nome do funcionário deve ser no formato FUNCIONARIO_{CONTADOR};
+    * O departamento deve ser sempre o de TI;
+    * o sexo vai depender do valor do contador se for ímpar Masculino, senão feminino;
+    * Salário deve ser gerado de forma randômica;
+    * Criar um usuário orelha que tem permissão de fazer SELECT na tabela de funcionário porém ele não pode em hipótese alguma visualizar o salário;
+
+Exemplo de bloco anonimo
+
+```sql
+do
+$$
+declare
+	idade integer default 18;
+begin
+	if idade >=18 then
+		raise notice 'Maior de idade';
+	else
+		raise notice 'Menor de idade';
+	end if;
+end;
+$$
+
+-- exemplo 2 para while
+do
+$$
+declare
+	contador integer default 1;
+begin
+	while contador <= 1000 loop
+		raise notice 'contador: %', contador;
+		contador := contador + 1;
+	end loop;
+end;
+$$
+```
+
+Resultado
+
+```sql
+-- ver os funcionarios
+select * from funcionario;
+-- ver os departamentos
+select * from departamento;
+-- adicionar a coluna salario
+alter table funcionario add column salario numeric(10,2) not null default 0.00;
+-- fazer updade no salario
+update funcionario set salario = id*1000;
+-- teste de random
+select round(random() *1000);
+-- exercicio
+do
+$$
+declare
+	contador integer;
+	sexo varchar(1);
+begin
+	for contador in 1..1000 loop
+		if mod(contador, 2) = 1 then
+			sexo = 'M';
+		else
+			sexo = 'F';
+		end if;
+		insert into funcionario(nome, salario, sexo, id_departamento) 
+		values (
+			'FUNCIONARIO_' || contador::varchar,
+			round(random() * 1000),
+			sexo,
+			1
+		);
+	end loop;
+end;
+$$
+```
+
