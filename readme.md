@@ -1292,3 +1292,13 @@ inner join department d on d.id = e.id_department
 inner join marital_status ms on ms.id = e.id_marital_status
 ```
 
+## Dia 4
+Vamos agora ver algumas funções de string nativas do PostgreSQL que pode nos ajudar na resolução de alguns problemas.
+
+![image-20210908142248302](C:\Users\abraao\study\curso_de_bd\assets\readme\image-20210908142248302.png)
+
+![image-20210908142258794](C:\Users\abraao\study\curso_de_bd\assets\readme\image-20210908142258794.png)
+
+```
+2:35
+```
