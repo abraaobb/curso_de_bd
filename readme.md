@@ -1299,6 +1299,86 @@ Vamos agora ver algumas funções de string nativas do PostgreSQL que pode nos a
 
 ![image-20210908142258794](C:\Users\abraao\study\curso_de_bd\assets\readme\image-20210908142258794.png)
 
+![image-20210909133901298](C:\Users\abraao\study\curso_de_bd\assets\readme\image-20210909133901298.png)
+
+exemplo de subquery
+
+![image-20210909161355183](C:\Users\abraao\study\curso_de_bd\assets\readme\image-20210909161355183.png)
+
+## dia 5
+
+in, not in, exists e not exists
+
+```sql
+-- trazer todas as cidades que tiveram vendas no ano de 2020
+select *
+from city c
+where c.id in (
+    select d.id_city
+    from sale s
+             inner join branch b on b.id = s.id_branch
+             inner join district d on d.id = b.id_district
+    where date_part('year', s.date) = 2021
+);
+
+select *
+from city c
+where exists(
+              select *
+              from sale s
+                       inner join branch b on b.id = s.id_branch
+                       inner join district d on d.id = b.id_district
+              where date_part('year', s.date) = 2021
+                and d.id_city = c.id
+          );
+
+select *
+from city c
+where c.id = any (
+    select d.id_city
+    from sale s
+             inner join branch b on b.id = s.id_branch
+             inner join district d on d.id = b.id_district
+    where date_part('year', s.date) = 2021
+);
+
+-- trazerr todos as zonas que não tiveram vendas no ano 2021
+select *
+from state s
+where s.id not in (
+    select c.id_state
+    from sale s
+             inner join branch b on b.id = s.id_branch
+             inner join district d on d.id = b.id_district
+             inner join city c on c.id = d.id_city
+    where date_part('year', s.date) = 2020
+);
+
+select *
+from state st
+where not exists(
+        select *
+        from sale s
+                 inner join branch b on b.id = s.id_branch
+                 inner join district d on d.id = b.id_district
+                 inner join city c on c.id = d.id_city
+        where date_part('year', s.date) = 2020
+          and st.id = c.id_state
+    );
 ```
-2:35
+
+```sql
+select *
+from customer c
+where c.id = all (select s.id_customer from sale s);
+
+select *
+from customer c
+where row (c.id, c.active) in (select s.id_customer, s.active from sale s);
+
+select *
+from customer c
+where exists(select * from sale s where c.id = s.id_customer and c.active = s.active);
 ```
+
+1:21
