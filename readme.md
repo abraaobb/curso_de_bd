@@ -1381,4 +1381,3 @@ from customer c
 where exists(select * from sale s where c.id = s.id_customer and c.active = s.active);
 ```
 
-1:21

@@ -93,5 +93,3 @@ select consulta.ano,
 from (
          select unnest(array [2010,2011,2012,2013]) as ano
      ) as consulta;
-
-2:28
