@@ -1381,3 +1381,33 @@ from customer c
 where exists(select * from sale s where c.id = s.id_customer and c.active = s.active);
 ```
 
+## Dia 6
+
+Hibridos
+
+create table cliente
+(
+    id        serial       not null primary key,
+    nome      varchar(100) not null,
+    telefones varchar[]
+);
+
+create table cliente
+(
+    id        serial       not null primary key,
+    nome      varchar(100) not null,
+    telefones varchar(10)[]
+);
+
+select *
+from cliente;
+
+drop table cliente;
+
+insert into cliente(nome, telefones)
+values ('Abraão Brandão', array ['0000-0000', '1111-1111']);
+
+select c.nome, c.telefones[2], c.telefones[1] from cliente c;
+
+
+1:36
