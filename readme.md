@@ -1384,7 +1384,8 @@ where exists(select * from sale s where c.id = s.id_customer and c.active = s.ac
 ## Dia 6
 
 Hibridos
-
+```sql
+-- criar a tabela
 create table cliente
 (
     id        serial       not null primary key,
@@ -1392,6 +1393,7 @@ create table cliente
     telefones varchar[]
 );
 
+-- criar a tabela
 create table cliente
 (
     id        serial       not null primary key,
@@ -1399,15 +1401,143 @@ create table cliente
     telefones varchar(10)[]
 );
 
+-- ver todas as linhas da tabela
 select *
-from cliente;
+from cliente c;
 
+-- dropar tabela
 drop table cliente;
 
+--inserir elemento na tabela
 insert into cliente(nome, telefones)
 values ('Abraão Brandão', array ['0000-0000', '1111-1111']);
 
-select c.nome, c.telefones[2], c.telefones[1] from cliente c;
+--consultar por posição do array
+select c.nome, c.telefones[2], c.telefones[1]
+from cliente c;
 
+--adicionar elemento no array
+update cliente set telefones = array_append(telefones, '2222-2222');
+```
 
-1:36
+arrays
+```sql
+select array_append(array [1,2], 3);
+
+select array_cat(array [1,2,3], array [4,5]);
+
+select array_length(array [1,2,3], 1);
+
+select array_position(array ['sun','mon','tue','wed','thu','fri','sat'], 'sun');
+
+select array_positions(array ['A','B','A','C','D'], 'A');
+
+select array_remove(array [1,2,3,2,4,5], 2);
+
+select array_replace(array [1,2,5,4], 5, 3);
+
+select array_to_string(array [1,2,3, NULL, 5], ',', '*');
+
+select string_to_array('xx~~yy~~zz', '~~', 'yy');
+```
+
+json
+```sql
+drop table cliente;
+
+create table cliente
+(
+    id                 serial       not null primary key,
+    nome               varchar(100) not null,
+    telefones          varchar(10)[],
+    outras_informacoes jsonb
+);
+
+insert into cliente (nome, telefones, outras_informacoes)
+values ('Abraão', array ['0000-0000'], '{
+  "idade": 33,
+  "email": "abraaobritof10@gmail.com"
+}');
+
+select *
+from cliente c;
+
+insert into cliente (nome, telefones, outras_informacoes)
+values ('Gisele', array ['1111-1111'], '{
+  "idade": 33,
+  "email": "gih@gmail.com",
+  "jogos": [
+    "batlefield",
+    "call of duty"
+  ]
+}');
+```
+
+```sql
+drop table cliente;
+
+create table cliente
+(
+    id                 serial       not null primary key,
+    nome               varchar(100) not null,
+    telefones          varchar(10)[],
+    outras_informacoes jsonb
+);
+
+insert into cliente (nome, telefones, outras_informacoes)
+values ('Abraão', array ['0000-0000'], '{
+  "idade": 33,
+  "email": "abraaobritof10@gmail.com"
+}');
+
+select *
+from cliente c;
+
+insert into cliente (nome, telefones, outras_informacoes)
+values ('Gisele', array ['1111-1111'], '{
+  "idade": 33,
+  "email": "gih@gmail.com",
+  "jogos": [
+    "batlefield",
+    "call of duty"
+  ]
+}');
+
+select c.outras_informacoes -> 'jogos'
+from cliente c;
+
+update cliente
+set outras_informacoes = outras_informacoes || '{"cpf": "000.000.000-00"}';
+
+update cliente
+set outras_informacoes = outras_informacoes || '{"cpf": "000.000.000-55"}'
+where id = 2;
+
+update cliente c
+set outras_informacoes = outras_informacoes || '{"telefones": [' + c.telefones + '}' where c.id = 1;
+```
+
+type
+```sql
+create type informacoes as
+(
+    cpf   varchar(11),
+    email varchar(256)
+);
+
+create table cliente
+(
+    id    serial       not null primary key,
+    nome  varchar(100) not null,
+    dados informacoes
+);
+
+drop table cliente;
+
+select *
+from cliente;
+
+insert into cliente(nome, dados) values ('Abraao', row ('00000000000', 'abraao#gmail.com'))
+
+select (dados).cpf from cliente;
+```
