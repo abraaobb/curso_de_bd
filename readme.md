@@ -1540,4 +1540,7 @@ from cliente;
 insert into cliente(nome, dados) values ('Abraao', row ('00000000000', 'abraao#gmail.com'))
 
 select (dados).cpf from cliente;
+
+select * from cliente
+where '2222-2222' = any (telefones);
 ```
